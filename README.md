@@ -1,8 +1,8 @@
-# Flask Shop Template
+# EasyBuy
 
 ## Description
 
-Flask Shop Template is a fully custom e-commerce website built from scratch using Flask, HTML, CSS, and JavaScript, with Bootstrap for layout and styling support.
+EasyBuy is a fully custom e-commerce website built from scratch using Flask, HTML, CSS, and JavaScript, with Bootstrap for layout and styling support.
 
 I designed and developed both the backend and the frontend entirely by myself, without using any pre-existing templates.
 
