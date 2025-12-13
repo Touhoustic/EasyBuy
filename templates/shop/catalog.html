@@ -1,5 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- Recommended Products Section -->
+{% if recommended_products %}
+<div class="mb-5">
+    <h3 class="mb-4">Recommended For You</h3>
+    <div class="row">
+        {% for product in recommended_products %}
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            {% include "shop/product_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+    <hr class="my-5">
+</div>
+{% endif %}
+
+<!-- Trending This Week Section -->
+{% if trending_products %}
+<div class="mb-5">
+    <h3 class="mb-4">Trending This Week</h3>
+    <div class="row">
+        {% for product in trending_products %}
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            {% include "shop/product_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+    <hr class="my-5">
+</div>
+{% endif %}
+
 <!-- Sorting bar -->
 <form class="mb-5" method="get">
     <div class="row align-items-center">

@@ -8,7 +8,11 @@
         <div class="card-body">
             <h5 class="card-title">{{ product.title }}</h5>
             <p class="mb-1 card-text text-primary">{{ "%.2f"|format(product.price) }} €</p>
+            {% if product.quantity < 10 %}
+            <small class="text-danger fw-bold">Only {{ product.quantity }} items left</small>
+            {% else %}
             <small class="text-muted">Quantity: <span class="badge bg-secondary">{{ product.quantity }}</span></small>
+            {% endif %}
         </div>
     </a>
 

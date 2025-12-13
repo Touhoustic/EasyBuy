@@ -2,7 +2,7 @@
 * SCRIPT LOADED SUCCESSFULLY *
 *****************************/
 
-console.log("Flask Shop Template script loaded.");
+console.log("EasyBuy script loaded.");
 
 /*********************
 * REMOVE RIGHT CLICK *

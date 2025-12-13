@@ -1,6 +1,6 @@
 import os
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, LoginManager, login_required
 from sqlalchemy import func
@@ -140,6 +140,12 @@ def create_app() -> Flask:
         if not current_user.is_admin:
             return render_template("error/403.html"), 403
 
+        categories = [
+            "Electronics", "Clothing", "Food & Beverages", "Home & Garden",
+            "Sports & Outdoors", "Books & Media", "Toys & Games", "Beauty & Personal Care",
+            "Furniture", "Health & Wellness", "Automotive", "Office Supplies"
+        ]
+
         # Fetch all products for the table.
         products = Product.query.all()
 
@@ -174,7 +180,8 @@ def create_app() -> Flask:
             total_orders=total_orders,
             total_revenue=total_revenue,
             total_orders_month=total_orders_month,
-            total_revenue_month=total_revenue_month
+            total_revenue_month=total_revenue_month,
+            categories=categories
         )
 
     @app.route("/dashboard/add-product", methods=["GET", "POST"])
@@ -183,6 +190,12 @@ def create_app() -> Flask:
         """
         Add a new product.
         """
+
+        categories = [
+            "Electronics", "Clothing", "Food & Beverages", "Home & Garden",
+            "Sports & Outdoors", "Books & Media", "Toys & Games", "Beauty & Personal Care",
+            "Furniture", "Health & Wellness", "Automotive", "Office Supplies"
+        ]
 
         if not current_user.is_admin:
             return render_template("error/403.html"), 403
@@ -193,6 +206,7 @@ def create_app() -> Flask:
             description = request.form["description"]
             price = float(request.form["price"])
             quantity = int(request.form["quantity"])
+            category = request.form.get("category", "Uncategorized")
             image_file = request.files["image"]
 
             # Ensure upload folder exists.
@@ -214,7 +228,8 @@ def create_app() -> Flask:
                 description=description,
                 image=filename,
                 price=price,
-                quantity=quantity
+                quantity=quantity,
+                category=category
             )
             db.session.add(product)
             db.session.commit()
@@ -222,7 +237,7 @@ def create_app() -> Flask:
             return redirect(url_for("dashboard"))
 
         # Render add-product form.
-        return render_template("admin/add_product.html")
+        return render_template("admin/add_product.html", categories=categories)
 
     @app.route("/dashboard/delete-product/<int:product_id>", methods=["POST"])
     @login_required
@@ -260,6 +275,12 @@ def create_app() -> Flask:
         Edit an existing product.
         """
 
+        categories = [
+            "Electronics", "Clothing", "Food & Beverages", "Home & Garden",
+            "Sports & Outdoors", "Books & Media", "Toys & Games", "Beauty & Personal Care",
+            "Furniture", "Health & Wellness", "Automotive", "Office Supplies"
+        ]
+
         if not current_user.is_admin:
             return render_template("error/403.html"), 403
 
@@ -271,6 +292,7 @@ def create_app() -> Flask:
             product.description = request.form["description"]
             product.price = float(request.form["price"])
             product.quantity = int(request.form["quantity"])
+            product.category = request.form.get("category", "Uncategorized")
 
             # Ensure upload folder exists.
             upload_folder = current_app.config["PRODUCT_PICTURE_FOLDER"]
@@ -299,7 +321,7 @@ def create_app() -> Flask:
             return redirect(url_for("dashboard"))
 
         # Render edit-product form.
-        return render_template("admin/edit_product.html", product=product)
+        return render_template("admin/edit_product.html", product=product, categories=categories)
 
     @app.route("/catalog")
     def catalog():
@@ -311,6 +333,45 @@ def create_app() -> Flask:
         page = request.args.get("page", 1, type=int)
         per_page = 12
 
+        # Get recommended products based on user's purchase history
+        recommended_products = []
+        if current_user.is_authenticated:
+            # Get all categories the user has purchased
+            user_orders = Order.query.filter_by(user_id=current_user.id).all()
+            purchased_categories = set()
+            
+            for order in user_orders:
+                for order_item in order.items:
+                    if order_item.product:
+                        purchased_categories.add(order_item.product.category)
+            
+            # Get products from those categories (limit to 4)
+            if purchased_categories:
+                recommended_products = (
+                    Product.query
+                    .filter(Product.category.in_(list(purchased_categories)))
+                    .order_by(Product.date_added.desc())
+                    .limit(4)
+                    .all()
+                )
+
+        # Get trending products from the last week (only for regular users, not admins)
+        trending_products = []
+        if current_user.is_authenticated and not current_user.is_admin:
+            week_ago = datetime.now() - timedelta(days=7)
+            trending_query = (
+                db.session
+                .query(Product, func.sum(OrderItem.quantity).label("total_quantity"))
+                .join(OrderItem, Product.id == OrderItem.product_id)
+                .join(Order, OrderItem.order_id == Order.id)
+                .filter(Order.created_at >= week_ago)
+                .group_by(Product.id)
+                .order_by(func.sum(OrderItem.quantity).desc())
+                .limit(4)
+                .all()
+            )
+            trending_products = [p for p, _ in trending_query]
+
         query = Product.query
 
         if sort_by == "price_asc": query = query.order_by(Product.price.asc())
@@ -321,7 +382,7 @@ def create_app() -> Flask:
 
         products = query.paginate(page=page, per_page=per_page)
 
-        return render_template("shop/catalog.html", title="Catalog", products=products, sort_by=sort_by)
+        return render_template("shop/catalog.html", title="Catalog", products=products, sort_by=sort_by, recommended_products=recommended_products, trending_products=trending_products)
 
     @app.route("/product/<int:product_id>")
     def product_detail(product_id):

@@ -60,6 +60,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     # Available stock quantity.
     quantity = db.Column(db.Integer, nullable=False, default=0)
+    category = db.Column(db.Text, nullable=False, default="Uncategorized")
 
 
 class Order(db.Model):
