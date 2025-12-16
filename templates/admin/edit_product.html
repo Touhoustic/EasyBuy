@@ -41,6 +41,20 @@
                         <label class="form-label">Product image:</label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                     </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isFlashSale-{{ product.id }}" name="is_flash_sale" {% if product.is_flash_sale %}checked{% endif %} onchange="toggleFlashSaleDuration('{{ product.id }}')">
+                            <label class="form-check-label" for="isFlashSale-{{ product.id }}">
+                                Enable Flash Sale
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="flashSaleDuration-{{ product.id }}" class="mb-3" style="display: {% if product.is_flash_sale %}block{% else %}none{% endif %};">
+                        <label class="form-label">Flash Sale Duration (days):</label>
+                        <input type="number" name="flash_sale_days" class="form-control" min="1" max="365" placeholder="e.g., 7" {% if product.is_flash_sale %}value="7"{% endif %}>
+                    </div>
                 </div>
 
                 <div class="modal-footer">

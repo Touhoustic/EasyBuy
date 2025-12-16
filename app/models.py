@@ -61,6 +61,27 @@ class Product(db.Model):
     # Available stock quantity.
     quantity = db.Column(db.Integer, nullable=False, default=0)
     category = db.Column(db.Text, nullable=False, default="Uncategorized")
+    # Flag to indicate if product is on flash sale.
+    is_flash_sale = db.Column(db.Boolean, default=False, nullable=False)
+    # End date of flash sale (only set if is_flash_sale is True).
+    flash_sale_end = db.Column(db.DateTime, nullable=True)
+
+    def is_flash_sale_active(self) -> bool:
+        """
+        Check if the flash sale is currently active.
+        """
+        if not self.is_flash_sale or not self.flash_sale_end:
+            return False
+        return datetime.utcnow() < self.flash_sale_end
+
+    def flash_sale_days_remaining(self) -> int:
+        """
+        Get the number of days remaining for the flash sale.
+        """
+        if not self.is_flash_sale_active():
+            return 0
+        delta = self.flash_sale_end - datetime.utcnow()
+        return max(0, delta.days + (1 if delta.seconds > 0 else 0))
 
 
 class Order(db.Model):

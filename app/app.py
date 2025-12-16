@@ -208,6 +208,14 @@ def create_app() -> Flask:
             quantity = int(request.form["quantity"])
             category = request.form.get("category", "Uncategorized")
             image_file = request.files["image"]
+            
+            # Get flash sale fields.
+            is_flash_sale = "is_flash_sale" in request.form
+            flash_sale_end = None
+            
+            if is_flash_sale:
+                flash_sale_days = int(request.form.get("flash_sale_days", 1))
+                flash_sale_end = datetime.utcnow() + timedelta(days=flash_sale_days)
 
             # Ensure upload folder exists.
             upload_folder = current_app.config["PRODUCT_PICTURE_FOLDER"]
@@ -229,7 +237,9 @@ def create_app() -> Flask:
                 image=filename,
                 price=price,
                 quantity=quantity,
-                category=category
+                category=category,
+                is_flash_sale=is_flash_sale,
+                flash_sale_end=flash_sale_end
             )
             db.session.add(product)
             db.session.commit()
@@ -293,6 +303,14 @@ def create_app() -> Flask:
             product.price = float(request.form["price"])
             product.quantity = int(request.form["quantity"])
             product.category = request.form.get("category", "Uncategorized")
+            
+            # Update flash sale fields.
+            product.is_flash_sale = "is_flash_sale" in request.form
+            if product.is_flash_sale:
+                flash_sale_days = int(request.form.get("flash_sale_days", 1))
+                product.flash_sale_end = datetime.utcnow() + timedelta(days=flash_sale_days)
+            else:
+                product.flash_sale_end = None
 
             # Ensure upload folder exists.
             upload_folder = current_app.config["PRODUCT_PICTURE_FOLDER"]
@@ -355,6 +373,16 @@ def create_app() -> Flask:
                     .all()
                 )
 
+        # Get flash sale products
+        flash_sale_products = (
+            Product.query
+            .filter(Product.is_flash_sale == True)
+            .filter(Product.flash_sale_end > datetime.utcnow())
+            .order_by(Product.date_added.desc())
+            .limit(4)
+            .all()
+        )
+
         # Get trending products from the last week (only for regular users, not admins)
         trending_products = []
         if current_user.is_authenticated and not current_user.is_admin:
@@ -382,7 +410,7 @@ def create_app() -> Flask:
 
         products = query.paginate(page=page, per_page=per_page)
 
-        return render_template("shop/catalog.html", title="Catalog", products=products, sort_by=sort_by, recommended_products=recommended_products, trending_products=trending_products)
+        return render_template("shop/catalog.html", title="Catalog", products=products, sort_by=sort_by, recommended_products=recommended_products, trending_products=trending_products, flash_sale_products=flash_sale_products)
 
     @app.route("/product/<int:product_id>")
     def product_detail(product_id):
