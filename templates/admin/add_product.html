@@ -42,6 +42,20 @@
                         <label class="form-label">Product image:</label>
                         <input type="file" name="image" class="form-control" accept="image/*">
                     </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isFlashSale" name="is_flash_sale" onchange="toggleFlashSaleDuration()">
+                            <label class="form-check-label" for="isFlashSale">
+                                Enable Flash Sale
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="flashSaleDuration" class="mb-3" style="display: none;">
+                        <label class="form-label">Flash Sale Duration (days):</label>
+                        <input type="number" name="flash_sale_days" class="form-control" min="1" max="365" placeholder="e.g., 7">
+                    </div>
                 </div>
 
                 <div class="modal-footer">

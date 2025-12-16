@@ -3,6 +3,11 @@
     <a class="text-decoration-none text-dark" href="{{ url_for('product_detail', product_id=product.id) }}">
         <div class="ratio ratio-1x1">
             <img class="card-img-top img-fluid rounded-top" src="{{ url_for('static', filename='images/product_pictures/' + product.image) }}" style="object-fit: cover;" alt="{{ product.title }}">
+            {% if product.is_flash_sale_active() %}
+            <div style="position: absolute; top: 10px; right: 10px;">
+                <span class="badge bg-danger"><i class="bi bi-lightning-fill"></i> Flash Sale - {{ product.flash_sale_days_remaining() }} days left</span>
+            </div>
+            {% endif %}
         </div>
 
         <div class="card-body">

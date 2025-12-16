@@ -120,6 +120,39 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/product-table.js') }}"></script>
+<script>
+function toggleFlashSaleDuration(productId) {
+    // For add product modal (no productId)
+    if (!productId) {
+        const checkbox = document.getElementById('isFlashSale');
+        const durationDiv = document.getElementById('flashSaleDuration');
+        const durationInput = document.querySelector('input[name="flash_sale_days"]');
+        
+        if (checkbox.checked) {
+            durationDiv.style.display = 'block';
+            durationInput.required = true;
+        } else {
+            durationDiv.style.display = 'none';
+            durationInput.required = false;
+            durationInput.value = '';
+        }
+    } else {
+        // For edit product modal (with productId)
+        const checkbox = document.getElementById('isFlashSale-' + productId);
+        const durationDiv = document.getElementById('flashSaleDuration-' + productId);
+        const durationInput = durationDiv.querySelector('input[name="flash_sale_days"]');
+        
+        if (checkbox.checked) {
+            durationDiv.style.display = 'block';
+            durationInput.required = true;
+        } else {
+            durationDiv.style.display = 'none';
+            durationInput.required = false;
+            durationInput.value = '';
+        }
+    }
+}
+</script>
 {% endblock %}
 
 {% endblock %}
