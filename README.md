@@ -157,8 +157,4 @@ This demo allows you to test a pre-configured environment and should give a resu
 
 - A big thank you to my friends Pierre and Yoann, always available to test and provide feedback on my projects.
 
-## Author(s)
-
-**Fabien CHAVONET**
-- GitHub: [@fchavonet](https://github.com/fchavonet)
 
